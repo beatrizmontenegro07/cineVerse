@@ -7,10 +7,11 @@ from django.http import JsonResponse
 class APIError(Exception):
     """An error safe to expose to API consumers."""
 
-    def __init__(self, message, *, code, status):
+    def __init__(self, message, *, code, status, fields=None):
         super().__init__(message)
         self.code = code
         self.status = status
+        self.fields = fields
 
 
 def api_endpoint(*methods):
@@ -27,8 +28,11 @@ def api_endpoint(*methods):
             try:
                 return view(request, *args, **kwargs)
             except APIError as error:
+                payload = {"code": error.code, "message": str(error)}
+                if error.fields:
+                    payload["fields"] = error.fields
                 return JsonResponse(
-                    {"error": {"code": error.code, "message": str(error)}}, status=error.status,
+                    {"error": payload}, status=error.status,
                 )
         return wrapped
     return decorate
@@ -44,3 +48,12 @@ def read_json(request):
     if not isinstance(data, dict):
         raise APIError("Request body must be a JSON object.", code="invalid_json", status=400)
     return data
+
+
+def authenticated(view):
+    @wraps(view)
+    def wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise APIError("Authentication required.", code="authentication_required", status=401)
+        return view(request, *args, **kwargs)
+    return wrapped
