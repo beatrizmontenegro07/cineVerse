@@ -85,27 +85,51 @@ docker compose up --build
 - Docker Compose services for Django, React + TypeScript and PostgreSQL.
 - Automatic migrations, persistent database storage and development reloads.
 - Database-aware health endpoint and frontend connectivity status.
+- Backend movie search by title through TMDB.
 
 ## Unimplemented Features and Justifications
+
+The search interface, movie details, and ratings are pending subsequent phases.
+This phase adds only the backend search and listing endpoints.
 
 ## API Endpoints
 
 | Method | Path | Behavior |
 | --- | --- | --- |
 | GET | `/api/health/` | Checks database connectivity; returns HTTP 200 when ready or 503 when unavailable. |
+| GET | `/api/movies/?page=1` | Lists popular movies from TMDB. |
+| GET | `/api/movies/search/?query=batman&page=1` | Searches TMDB movie titles. |
 
-## Tests
-
-With the services running:
+Both movie endpoints accept `page` from 1 to 500 (default: 1).
+Search uses [movie search endpoint](https://developer.themoviedb.org/reference/search-movie).
+Configure a valid TMDB v3 API key in `.env` and recreate the backend after changing it:
 
 ```bash
-docker compose config --quiet
-docker compose exec backend python manage.py check
-docker compose exec backend python manage.py test config
-docker compose exec frontend npm run build
+docker compose up -d backend
+curl 'http://localhost:8000/api/movies/search/?query=batman&page=1'
 ```
 
-The backend tests cover a successful database check and a database failure.
+Example response :
+
+```json
+{
+  "page": 1,
+  "total_pages": 1,
+  "total_results": 1,
+  "results": [
+    {"id": 272, "title": "Batman Begins", "poster_url": null}
+  ]
+}
+```
+
+
+| Status | Meaning |
+| --- | --- |
+| 400 | Invalid query or page. |
+| 405 | Unsupported method (movie endpoints accept GET and HEAD). |
+| 502 | TMDB HTTP/network error or invalid response. |
+| 503 | Missing API key or TMDB rate limit. |
+| 504 | TMDB request timed out (10-second timeout). |
 
 ## Technical Decisions
 
