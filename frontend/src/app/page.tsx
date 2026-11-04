@@ -1,33 +1,37 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { SiteHeader } from '../components/layout/site-header';
+import { MovieSearch } from '../features/movies/components/movie-search';
 
 export default function Home() {
-  const [status, setStatus] = useState('Checking connection…');
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/health/', { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('Service unavailable');
-        const health = await response.json();
-        if (health.status !== 'ok' || health.database !== 'ok') {
-          throw new Error('Service unavailable');
-        }
-        setStatus('Backend and database are ready.');
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setStatus('Unable to connect to the backend.');
-      });
-    return () => controller.abort();
-  }, []);
-
   return (
-    <main>
-      <h1>cineVerse</h1>
-      <p>Movie search and ratings are coming soon.</p>
-      <p role="status">{status}</p>
-    </main>
+    <>
+      <a
+        href="#main-content"
+        className="fixed top-3 left-3 z-50 -translate-y-24 rounded-lg bg-accent px-4 py-3 font-semibold text-black focus:translate-y-0"
+      >
+        Pular para o conteúdo
+      </a>
+      <div className="flex min-h-dvh w-full flex-col overflow-hidden bg-background">
+        <SiteHeader />
+        <main id="main-content" className="flex-1">
+          <MovieSearch />
+        </main>
+        <footer className="mx-5 flex flex-wrap items-center justify-between gap-2 border-t border-white/6 py-5 text-xs text-[#8c829b] sm:mx-9 lg:mx-12">
+          <p>
+            CineVerse
+          </p>
+          <p>
+            Dados fornecidos pelo{' '}
+            <a
+              href="https://www.themoviedb.org/"
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-sm text-[#b9a6cf] underline-offset-4 hover:underline"
+            >
+              TMDB
+            </a>
+          </p>
+        </footer>
+      </div>
+    </>
   );
 }
-
