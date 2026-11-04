@@ -1,3 +1,4 @@
+import { requestJson } from '../../lib/api';
 import type {
   CastMember,
   Movie,
@@ -6,18 +7,8 @@ import type {
   MovieSearchResponse,
 } from './types';
 
-const errorMessages: Record<string, string> = {
-  tmdb_not_configured:
-    'O serviço de filmes está temporariamente indisponível. Tente novamente mais tarde.',
-  tmdb_rate_limited:
-    'Muitas consultas no momento. Aguarde um pouco e tente novamente.',
-  tmdb_timeout: 'A consulta demorou mais que o esperado. Tente novamente.',
-  invalid_parameters:
-    'Não foi possível consultar este filme. Tente novamente.',
-  movie_not_found:
-    'Este filme não foi encontrado.',
-};
-const fallbackError = 'Não foi possível carregar os filmes. Tente novamente.';
+const fallbackError =
+  'O serviço retornou uma resposta inválida. Tente novamente.';
 
 function isImageUrl(value: unknown): value is string | null {
   return (
@@ -84,60 +75,24 @@ function isMovieDetails(value: unknown): value is MovieDetails {
   );
 }
 
-async function requestMovies<T>(
-  url: string,
-  signal: AbortSignal,
-  validate: (value: unknown) => value is T,
-): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
-      headers: { Accept: 'application/json' },
-    });
-  } catch (error) {
-    if (signal.aborted) throw error;
-    throw new Error(
-      'Não foi possível conectar ao serviço de filmes. Verifique sua conexão e tente novamente.',
-    );
-  }
-
-  let data: unknown;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error(fallbackError);
-  }
-  if (!response.ok) {
-    const code = (data as { error?: { code?: string } } | null)?.error?.code;
-    throw new Error((code && errorMessages[code]) || fallbackError);
-  }
-  if (!validate(data)) throw new Error(fallbackError);
-  return data;
-}
-
 export function searchMovies(
   query: string,
   page: number,
   signal: AbortSignal,
 ): Promise<MovieSearchResponse> {
   const parameters = new URLSearchParams({ query, page: String(page) });
-  return requestMovies(
-    `/api/movies/search/?${parameters}`,
+  return requestJson(`/api/movies/search/?${parameters}`, isSearchResponse, {
     signal,
-    isSearchResponse,
-  );
+  });
 }
 
 export async function getMovieDetails(
   movieId: number,
   signal: AbortSignal,
 ): Promise<MovieDetails> {
-  const movie = await requestMovies(
-    `/api/movies/${movieId}/`,
+  const movie = await requestJson(`/api/movies/${movieId}/`, isMovieDetails, {
     signal,
-    isMovieDetails,
-  );
+  });
   if (movie.id !== movieId) throw new Error(fallbackError);
   return movie;
 }
