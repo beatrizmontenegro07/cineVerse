@@ -91,11 +91,15 @@ docker compose up --build
   complete cast, loading/error states, retry, and accessible keyboard navigation.
 - Rating model and API for creating, reading, editing, deleting, and listing
   scores from 1 to 5, stored in PostgreSQL and isolated by browser session.
+- Interactive rating stars and save/delete actions in the details modal.
+- Meus Filmes page at `/meus-filmes`, with scores, pagination, movie details,
+  and deletion. Saved scores remain available after a reload in the same session.
 - Responsive search page  with movie posters, loading skeletons, empty/error states, retry, and incremental pagination.
 
 ## Unimplemented Features and Justifications
 
-The rating interface and the Rated Movies page are pending subsequent phases.
+Authentication and cross-device accounts, filtering, and caching are not yet
+implemented. Ratings currently belong to anonymous browser sessions.
 
 ## API Endpoints
 
