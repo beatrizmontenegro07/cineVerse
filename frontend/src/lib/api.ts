@@ -1,4 +1,9 @@
 const messages: Record<string, string> = {
+  authentication_required: 'Entre na sua conta para continuar.',
+  invalid_credentials: 'Nome de usuário ou senha incorretos.',
+  invalid_registration: 'Confira os campos do cadastro.',
+  invalid_credentials_payload: 'Confira os dados informados.',
+  username_exists: 'Este nome de usuário já está em uso.',
   tmdb_not_configured:
     'O serviço de filmes está temporariamente indisponível. Tente novamente mais tarde.',
   tmdb_rate_limited:
@@ -19,6 +24,7 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public code?: string,
+    public fields?: Record<string, string[]>,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -46,11 +52,17 @@ export async function requestJson<T>(
   }
   if (!response.ok) {
     const code = (data as { error?: { code?: string } } | null)?.error?.code;
+    const fields = (
+      data as { error?: { fields?: Record<string, string[]> } } | null
+    )?.error?.fields;
+    if (code === 'authentication_required' && typeof window !== 'undefined')
+      window.dispatchEvent(new Event('cineverse:unauthorized'));
     throw new ApiError(
       (code && messages[code]) ||
         'Não foi possível concluir a solicitação. Tente novamente.',
       response.status,
       code,
+      fields,
     );
   }
   if (!validate(data))
@@ -98,10 +110,49 @@ export async function requestEmpty(
   } catch {
     /* Use the fallback error for a non-JSON response. */
   }
+  if (code === 'authentication_required' && typeof window !== 'undefined')
+    window.dispatchEvent(new Event('cineverse:unauthorized'));
   throw new ApiError(
     (code && messages[code]) ||
       'Não foi possível excluir a avaliação. Tente novamente.',
     response.status,
     code,
   );
+}
+
+let csrfRequest: Promise<string> | null = null;
+
+function isCsrfResponse(value: unknown): value is { csrf_token: string } {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    typeof (value as { csrf_token?: unknown }).csrf_token === 'string'
+  );
+}
+
+function csrfToken() {
+  // Share concurrent bootstrap requests so the browser gets one session cookie.
+  if (!csrfRequest) {
+    csrfRequest = requestJson('/api/csrf/', isCsrfResponse)
+      .then((data) => data.csrf_token)
+      .finally(() => {
+        csrfRequest = null;
+      });
+  }
+  return csrfRequest;
+}
+
+export async function writeOptions(
+  method: string,
+  signal: AbortSignal,
+  body?: object,
+) {
+  const token = await csrfToken();
+  signal.throwIfAborted();
+  return {
+    method,
+    signal,
+    headers: { 'X-CSRFToken': token, 'Content-Type': 'application/json' },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  };
 }

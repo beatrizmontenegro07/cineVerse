@@ -1,4 +1,9 @@
-import { ApiError, requestEmpty, requestJson } from '../../lib/api';
+import {
+  ApiError,
+  requestEmpty,
+  requestJson,
+  writeOptions,
+} from '../../lib/api';
 import type {
   Rating,
   RatingFilterOptions,
@@ -6,28 +11,6 @@ import type {
   RatingsPage,
   RatingScore,
 } from './types';
-
-let csrfRequest: Promise<string> | null = null;
-
-function isCsrfResponse(value: unknown): value is { csrf_token: string } {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    typeof (value as { csrf_token?: unknown }).csrf_token === 'string'
-  );
-}
-
-function csrfToken() {
-  // Share concurrent bootstrap requests so the browser gets one session cookie.
-  if (!csrfRequest) {
-    csrfRequest = requestJson('/api/csrf/', isCsrfResponse)
-      .then((data) => data.csrf_token)
-      .finally(() => {
-        csrfRequest = null;
-      });
-  }
-  return csrfRequest;
-}
 
 function isRating(value: unknown): value is Rating {
   if (!value || typeof value !== 'object') return false;
@@ -57,21 +40,6 @@ function isRatingsPage(value: unknown): value is RatingsPage {
     Array.isArray(page.results) &&
     page.results.every(isRating)
   );
-}
-
-async function writeOptions(
-  method: string,
-  signal: AbortSignal,
-  body?: object,
-) {
-  const token = await csrfToken();
-  signal.throwIfAborted();
-  return {
-    method,
-    signal,
-    headers: { 'X-CSRFToken': token, 'Content-Type': 'application/json' },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  };
 }
 
 export async function getRating(

@@ -11,11 +11,20 @@ import { useRatedMovies } from '../hooks/use-rated-movies';
 import type { Rating, RatingFilters as Filters } from '../types';
 import { RatedMovieRow } from './rated-movie-row';
 import { RatingFilters } from './rating-filters';
+import { AuthRequired } from '../../auth/components/auth-required';
 
 const buttonClass =
   'inline-flex items-center justify-center gap-2 rounded-full border border-accent/50 px-5 py-2.5 text-sm font-semibold text-[#c59aff] transition hover:border-accent hover:bg-accent/10 disabled:cursor-wait disabled:opacity-50';
 
 export function RatedMovies() {
+  return (
+    <AuthRequired message="Entre na sua conta para acessar seus filmes avaliados.">
+      <RatedMoviesContent />
+    </AuthRequired>
+  );
+}
+
+function RatedMoviesContent() {
   const [filters, setFilters] = useState<Filters>({ genre: '', year: '' });
   const [draftFilters, setDraftFilters] = useState<Filters>({
     genre: '',

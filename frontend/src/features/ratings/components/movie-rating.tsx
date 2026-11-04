@@ -8,8 +8,17 @@ import { useMovieRating } from '../hooks/use-movie-rating';
 import { useRatingActions } from '../hooks/use-rating-actions';
 import { DeleteRatingButton } from './delete-rating-button';
 import { RatingStars } from './rating-stars';
+import { AuthRequired } from '../../auth/components/auth-required';
 
-export function MovieRating({
+export function MovieRating(props: { movieId: number; title: string }) {
+  return (
+    <AuthRequired>
+      <MovieRatingForm {...props} />
+    </AuthRequired>
+  );
+}
+
+function MovieRatingForm({
   movieId,
   title,
 }: {
