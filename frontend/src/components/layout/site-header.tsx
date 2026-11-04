@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { Icon } from '../ui/icon';
 
@@ -20,8 +23,13 @@ function BrandMark() {
 }
 
 export function SiteHeader() {
+  const pathname = usePathname();
+  const links = [
+    { href: '/', label: 'Home' },
+    { href: '/meus-filmes', label: 'Meus Filmes' },
+  ];
   return (
-    <header className="relative z-10 flex items-center justify-between gap-4 border-b border-white/5 bg-background/85 px-5 py-6 sm:px-9 lg:px-12">
+    <header className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/5 bg-background/85 px-5 py-6 sm:px-9 lg:px-12">
       <Link
         href="/"
         aria-label="CineVerse — página inicial"
@@ -34,23 +42,18 @@ export function SiteHeader() {
       </Link>
       <nav
         aria-label="Navegação principal"
-        className="flex items-center gap-2 sm:gap-5"
+        className="flex w-full items-center gap-2 sm:w-auto sm:gap-5"
       >
-        <Link
-          href="/"
-          aria-current="page"
-          className="rounded-full border border-accent/15 bg-[#351666] px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#482184] sm:px-6"
-        >
-          Home
-        </Link>
-        <button
-          type="button"
-          disabled
-          title="Meus filmes — em breve"
-          className="hidden px-1 py-2 text-sm text-muted disabled:cursor-default sm:block"
-        >
-          Meus Filmes <span className="sr-only">(em breve)</span>
-        </button>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={pathname === link.href ? 'page' : undefined}
+            className={`rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors sm:px-6 ${pathname === link.href ? 'border-accent/15 bg-[#351666] text-white hover:bg-[#482184]' : 'border-transparent text-muted hover:bg-white/5 hover:text-white'}`}
+          >
+            {link.label}
+          </Link>
+        ))}
         <span
           title="Perfil — em breve"
           className="hidden size-9 items-center justify-center rounded-full border border-[#686074] bg-[#292331] text-[#bbb0ca] sm:flex"
