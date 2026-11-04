@@ -18,14 +18,6 @@ The main objectives of the application are:
 - **External API:** The Movie Database (TMDB) API
 - **Infrastructure:** Docker 
 
-## Repository Structure
-
-```text
-backend/   # Python (Django)
-frontend/  # React + TypeScript interface
-  src/app/ # Next.js App Router pages and root layout
-```
-
 ## Prerequisites
 
 - Docker
