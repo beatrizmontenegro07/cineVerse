@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Icon } from '../ui/icon';
+import { AccountMenu } from '../../features/auth/components/account-menu';
 
 function BrandMark() {
   return (
@@ -42,7 +42,7 @@ export function SiteHeader() {
       </Link>
       <nav
         aria-label="Navegação principal"
-        className="flex w-full items-center gap-2 sm:w-auto sm:gap-5"
+        className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-5"
       >
         {links.map((link) => (
           <Link
@@ -54,13 +54,7 @@ export function SiteHeader() {
             {link.label}
           </Link>
         ))}
-        <span
-          title="Perfil — em breve"
-          className="hidden size-9 items-center justify-center rounded-full border border-[#686074] bg-[#292331] text-[#bbb0ca] sm:flex"
-        >
-          <Icon name="user" className="size-6" />
-          <span className="sr-only">Perfil em breve</span>
-        </span>
+        <AccountMenu />
       </nav>
     </header>
   );
