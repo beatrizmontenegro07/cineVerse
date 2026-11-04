@@ -23,6 +23,9 @@ media/
 
 # Node / Frontend
 node_modules/
+.next/
+out/
+*.tsbuildinfo
 dist/
 dist-ssr/
 *.local
