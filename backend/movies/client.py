@@ -24,6 +24,10 @@ def get_movies(path, **parameters):
         with urlopen(request, timeout=REQUEST_TIMEOUT) as response:
             return json.load(response)
     except HTTPError as error:
+        if error.code == 404:
+            raise MovieAPIError(
+                "Movie not found.", code="movie_not_found", status=404,
+            ) from None
         if error.code == 429:
             raise MovieAPIError(
                 "Movie service is busy. Try again later.", code="tmdb_rate_limited", status=503,

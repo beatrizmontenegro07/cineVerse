@@ -3,7 +3,6 @@ from .exceptions import InvalidParameters
 MAX_PAGE = 500
 MAX_QUERY_LENGTH = 200
 
-
 def validate_page(parameters):
     raw_page = parameters.get("page", "1")
     if not raw_page.isascii() or not raw_page.isdecimal() or len(raw_page) > 3:
