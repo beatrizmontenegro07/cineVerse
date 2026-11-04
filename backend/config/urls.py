@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/movies/", include("movies.urls")),
     path("api/ratings/", include("ratings.urls")),
     path("api/csrf/", csrf_token, name="csrf"),
+    path("api/auth/", include("accounts.urls")),
 ]
