@@ -89,11 +89,13 @@ docker compose up --build
 - Backend movie details with synopsis, release date, cast, runtime, genres, and TMDB average score.
 - Movie details modal opened from search results, with responsive layout,
   complete cast, loading/error states, retry, and accessible keyboard navigation.
+- Rating model and API for creating, reading, editing, deleting, and listing
+  scores from 1 to 5, stored in PostgreSQL and isolated by browser session.
 - Responsive search page  with movie posters, loading skeletons, empty/error states, retry, and incremental pagination.
 
 ## Unimplemented Features and Justifications
 
-Movie ratings and the Rated Movies page are pending subsequent phases.
+The rating interface and the Rated Movies page are pending subsequent phases.
 
 ## API Endpoints
 
@@ -102,6 +104,12 @@ Movie ratings and the Rated Movies page are pending subsequent phases.
 | GET | `/api/health/` | Checks database connectivity; returns HTTP 200 when ready or 503 when unavailable. |
 | GET | `/api/movies/search/?query=batman&page=1` | Searches TMDB movie titles. |
 | GET | `/api/movies/<movie_id>/` | Retrieves details and cast for a movie by its TMDB ID. |
+| GET | `/api/csrf/` | Starts a browser session and returns a CSRF token for writes. |
+| GET | `/api/ratings/?page=1` | Lists this session's ratings, newest updates first (20 per page). |
+| POST | `/api/ratings/` | Creates a rating from `{"movie_id": 27205, "score": 4}`. |
+| GET | `/api/ratings/<movie_id>/` | Reads this session's rating for a movie. |
+| PATCH | `/api/ratings/<movie_id>/` | Updates only the score: `{"score": 5}`. |
+| DELETE | `/api/ratings/<movie_id>/` | Deletes this session's rating; returns 204 with no body. |
 
 
 ```bash
@@ -113,8 +121,11 @@ curl 'http://localhost:8000/api/movies/272/'
 | Status | Meaning |
 | --- | --- |
 | 400 | Invalid query, page, or movie ID. |
+| 403 | Missing/invalid CSRF token or untrusted origin on a write request. |
 | 404 | Movie not found. |
 | 405 | Unsupported method (movie endpoints accept GET and HEAD). |
+| 409 | This session has already rated the movie; use PATCH to edit. |
+| 415 | A JSON write did not use `Content-Type: application/json`. |
 | 502 | TMDB HTTP/network error or invalid response. |
 | 503 | Missing API key or TMDB rate limit. |
 | 504 | TMDB request timed out (10-second timeout). 
