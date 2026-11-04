@@ -8,6 +8,8 @@ class Rating(models.Model):
     title = models.TextField()
     poster_url = models.URLField(max_length=1000, null=True, blank=True)
     release_date = models.DateField(null=True, blank=True)
+    # NULL identifies legacy ratings awaiting metadata; [] means no known genres.
+    genres = models.JSONField(null=True, blank=True, default=None)
     score = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

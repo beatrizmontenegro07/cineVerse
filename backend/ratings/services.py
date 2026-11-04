@@ -23,8 +23,13 @@ def get_rating(request, movie_id):
         raise APIError("Rating not found.", code="rating_not_found", status=404) from None
 
 
-def list_ratings(request, page):
-    paginator = Paginator(_session_ratings(request), PAGE_SIZE)
+def list_ratings(request, page, *, genre=None, year=None):
+    queryset = _session_ratings(request)
+    if genre is not None:
+        queryset = queryset.filter(genres__contains=[{"id": genre}])
+    if year is not None:
+        queryset = queryset.filter(release_date__year=year)
+    paginator = Paginator(queryset, PAGE_SIZE)
     try:
         ratings = paginator.page(page)
     except EmptyPage:
@@ -34,6 +39,21 @@ def list_ratings(request, page):
         "total_pages": paginator.num_pages,
         "total_results": paginator.count,
         "results": [serialize_rating(rating) for rating in ratings],
+    }
+
+
+def rating_filter_options(request):
+    queryset = _session_ratings(request)
+    genres = {}
+    for metadata in queryset.values_list("genres", flat=True):
+        for genre in metadata or []:
+            genres[genre["id"]] = genre["name"]
+    return {
+        "genres": sorted(
+            [{"id": genre_id, "name": name} for genre_id, name in genres.items()],
+            key=lambda genre: genre["name"].casefold(),
+        ),
+        "years": [value.year for value in queryset.dates("release_date", "year", order="DESC")],
     }
 
 
@@ -56,6 +76,7 @@ def create_rating(request, movie_id, score):
                 title=movie["title"],
                 poster_url=movie["poster_url"],
                 release_date=movie["release_date"],
+                genres=movie["genres"],
                 score=score,
             )
     except IntegrityError:
