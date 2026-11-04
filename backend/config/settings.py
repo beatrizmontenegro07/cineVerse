@@ -13,6 +13,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "movies",
+    "ratings",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -35,6 +36,8 @@ DATABASES = {
     }
 }
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
+CSRF_FAILURE_VIEW = "config.views.csrf_failure"
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True

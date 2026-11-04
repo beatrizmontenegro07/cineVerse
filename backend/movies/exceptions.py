@@ -1,10 +1,8 @@
-class MovieAPIError(Exception):
-    """An error safe to return to an API consumer."""
+from core.api import APIError
 
-    def __init__(self, message, *, code, status):
-        super().__init__(message)
-        self.code = code
-        self.status = status
+
+class MovieAPIError(APIError):
+    """An error safe to return to an API consumer."""
 
 
 class InvalidParameters(MovieAPIError):

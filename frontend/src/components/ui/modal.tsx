@@ -47,7 +47,21 @@ export function Modal({ titleId, children, onClose }: ModalProps) {
       event.currentTarget.querySelectorAll<HTMLElement>(
         'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       ),
-    ).filter((element) => element.getClientRects().length > 0);
+    ).filter((element) => {
+      if (!element.getClientRects().length || element.matches(':disabled'))
+        return false;
+      if (element instanceof HTMLInputElement && element.type === 'radio') {
+        const group = Array.from(
+          event.currentTarget.querySelectorAll<HTMLInputElement>(
+            'input[type="radio"]',
+          ),
+        ).filter(
+          (radio) => radio.name === element.name && !radio.matches(':disabled'),
+        );
+        return element === (group.find((radio) => radio.checked) ?? group[0]);
+      }
+      return true;
+    });
     const first = controls[0];
     const last = controls[controls.length - 1];
     if (event.shiftKey && document.activeElement === first) {

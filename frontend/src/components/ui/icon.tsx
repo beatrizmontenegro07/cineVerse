@@ -8,6 +8,11 @@ const paths = {
     </>
   ),
   close: <path d="m6 6 12 12M6 18 18 6" />,
+  trash: (
+    <>
+      <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" />
+    </>
+  ),
   arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
   chevron: <path d="m9 5 7 7-7 7" />,
   star: (
