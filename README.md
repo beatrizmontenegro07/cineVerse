@@ -1,8 +1,8 @@
-# cineVerse
+# Cine Verse
 
 ## About the Project
 
-**cineVerse** provides an interactive movie search and rating interface powered by [The Movie Database (TMDB) public API](https://developer.themoviedb.org/docs/getting-started).
+**Cine Verse** provides an interactive movie search and rating interface powered by [The Movie Database (TMDB) public API](https://developer.themoviedb.org/docs/getting-started).
 
 The main objectives of the application are:
 - Search for movies via the TMDB API and display results with their poster and title.
@@ -12,7 +12,7 @@ The main objectives of the application are:
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript
+- **Frontend:** React, TypeScript, Next.js, Tailwind CSS
 - **Backend:** Python, Django
 - **Database:** PostgreSQL
 - **External API:** The Movie Database (TMDB) API
@@ -86,21 +86,20 @@ docker compose up --build
 - Automatic migrations, persistent database storage and development reloads.
 - Database-aware health endpoint and frontend connectivity status.
 - Backend movie search by title through TMDB.
+- Responsive search page  with movie posters, loading skeletons, empty/error states, retry, and incremental pagination.
 
 ## Unimplemented Features and Justifications
 
-The search interface, movie details, and ratings are pending subsequent phases.
-This phase adds only the backend search and listing endpoints.
+Movie details and ratings are pending subsequent phases.
 
 ## API Endpoints
 
 | Method | Path | Behavior |
 | --- | --- | --- |
 | GET | `/api/health/` | Checks database connectivity; returns HTTP 200 when ready or 503 when unavailable. |
-| GET | `/api/movies/?page=1` | Lists popular movies from TMDB. |
 | GET | `/api/movies/search/?query=batman&page=1` | Searches TMDB movie titles. |
 
-Both movie endpoints accept `page` from 1 to 500 (default: 1).
+The search endpoint accepts `page` from 1 to 500 (default: 1).
 Search uses [movie search endpoint](https://developer.themoviedb.org/reference/search-movie).
 Configure a valid TMDB v3 API key in `.env` and recreate the backend after changing it:
 
@@ -142,5 +141,4 @@ Example response :
 
 AI tools (Antigravity) were used to define initial documentation structure.
 Codex assisted with the Docker and Django configuration
-
-## License
+and the frontend search page.
