@@ -5,7 +5,7 @@ from django.views.decorators.cache import never_cache
 from core.api import api_endpoint, read_json
 
 from . import services
-from .validators import validate_movie_id, validate_page, validate_rating
+from .validators import validate_filters, validate_movie_id, validate_page, validate_rating
 
 
 @never_cache
@@ -18,7 +18,13 @@ def rating_collection(request):
         response = JsonResponse(services.serialize_rating(rating), status=201)
         response["Location"] = reverse("ratings:detail", kwargs={"movie_id": rating.movie_id})
         return response
-    return JsonResponse(services.list_ratings(request, validate_page(request.GET)))
+    return JsonResponse(services.list_ratings(request, validate_page(request.GET), **validate_filters(request.GET)))
+
+
+@never_cache
+@api_endpoint("GET", "HEAD")
+def rating_filter_options(request):
+    return JsonResponse(services.rating_filter_options(request))
 
 
 @never_cache

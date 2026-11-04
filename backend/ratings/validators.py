@@ -28,3 +28,18 @@ def validate_page(parameters):
     if not value.isascii() or not value.isdecimal() or len(value) > 9 or int(value) < 1:
         raise _invalid("page must be a positive integer.")
     return int(value)
+
+
+def validate_filters(parameters):
+    filters = {}
+    for field, minimum, maximum in (("genre", 1, 2_147_483_647), ("year", 1000, 9999)):
+        value = parameters.get(field, "")
+        if not value:
+            continue
+        if not value.isascii() or not value.isdecimal() or len(value) > 10:
+            raise _invalid(f"{field} must be an integer between {minimum} and {maximum}.")
+        number = int(value)
+        if not minimum <= number <= maximum:
+            raise _invalid(f"{field} must be an integer between {minimum} and {maximum}.")
+        filters[field] = number
+    return filters

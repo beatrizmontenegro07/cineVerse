@@ -1,5 +1,11 @@
 import { ApiError, requestEmpty, requestJson } from '../../lib/api';
-import type { Rating, RatingsPage, RatingScore } from './types';
+import type {
+  Rating,
+  RatingFilterOptions,
+  RatingFilters,
+  RatingsPage,
+  RatingScore,
+} from './types';
 
 let csrfRequest: Promise<string> | null = null;
 
@@ -88,8 +94,38 @@ export async function getRating(
 export function listRatings(
   page: number,
   signal: AbortSignal,
+  filters: RatingFilters = { genre: '', year: '' },
 ): Promise<RatingsPage> {
-  return requestJson(`/api/ratings/?page=${page}`, isRatingsPage, { signal });
+  const parameters = new URLSearchParams({ page: String(page) });
+  if (filters.genre) parameters.set('genre', filters.genre);
+  if (filters.year) parameters.set('year', filters.year);
+  return requestJson(`/api/ratings/?${parameters}`, isRatingsPage, { signal });
+}
+
+export function getRatingFilterOptions(
+  signal: AbortSignal,
+): Promise<RatingFilterOptions> {
+  return requestJson(
+    '/api/ratings/filter-options/',
+    (value): value is RatingFilterOptions => {
+      if (!value || typeof value !== 'object') return false;
+      const options = value as Partial<RatingFilterOptions>;
+      return (
+        Array.isArray(options.genres) &&
+        options.genres.every(
+          (genre) =>
+            genre &&
+            Number.isInteger(genre.id) &&
+            typeof genre.name === 'string',
+        ) &&
+        Array.isArray(options.years) &&
+        options.years.every(
+          (year) => Number.isInteger(year) && year >= 1000 && year <= 9999,
+        )
+      );
+    },
+    { signal },
+  );
 }
 
 export async function saveRating(

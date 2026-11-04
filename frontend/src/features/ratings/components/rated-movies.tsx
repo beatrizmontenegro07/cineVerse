@@ -8,13 +8,24 @@ import { MovieDetailsModal } from '../../movies/components/movie-details-modal';
 import { SearchFeedback } from '../../movies/components/search-feedback';
 import type { Movie } from '../../movies/types';
 import { useRatedMovies } from '../hooks/use-rated-movies';
-import type { Rating } from '../types';
+import type { Rating, RatingFilters as Filters } from '../types';
 import { RatedMovieRow } from './rated-movie-row';
+import { RatingFilters } from './rating-filters';
 
 const buttonClass =
   'inline-flex items-center justify-center gap-2 rounded-full border border-accent/50 px-5 py-2.5 text-sm font-semibold text-[#c59aff] transition hover:border-accent hover:bg-accent/10 disabled:cursor-wait disabled:opacity-50';
 
 export function RatedMovies() {
+  const [filters, setFilters] = useState<Filters>({ genre: '', year: '' });
+  const [draftFilters, setDraftFilters] = useState<Filters>({
+    genre: '',
+    year: '',
+  });
+  const filtered = Boolean(filters.genre || filters.year);
+  function clearFilters() {
+    setDraftFilters({ genre: '', year: '' });
+    setFilters({ genre: '', year: '' });
+  }
   const {
     ratings,
     totalResults,
@@ -25,7 +36,7 @@ export function RatedMovies() {
     hasMore,
     refresh,
     loadMore,
-  } = useRatedMovies();
+  } = useRatedMovies(filters);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [message, setMessage] = useState('');
   function openDetails(rating: Rating) {
@@ -65,6 +76,15 @@ export function RatedMovies() {
             </p>
           )}
         </div>
+        <RatingFilters
+          value={draftFilters}
+          onChange={setDraftFilters}
+          onApply={() => {
+            setFilters({ ...draftFilters });
+            setMessage('');
+          }}
+          onClear={clearFilters}
+        />
         {message && (
           <p role="status" className="mb-5 text-sm text-[#c4a4ed]">
             {message}
@@ -101,16 +121,31 @@ export function RatedMovies() {
         )}
         {status === 'ready' && !ratings.length && (
           <SearchFeedback
-            title="Sua lista começa com uma boa história."
+            title={
+              filtered
+                ? 'Nenhum filme avaliado com esses filtros.'
+                : 'Sua lista começa com uma boa história.'
+            }
             action={
-              <Link href="/" className={buttonClass}>
-                Buscar filmes
-                <Icon name="arrow" className="size-4" />
-              </Link>
+              filtered ? (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className={buttonClass}
+                >
+                  Limpar filtros
+                </button>
+              ) : (
+                <Link href="/" className={buttonClass}>
+                  Buscar filmes
+                  <Icon name="arrow" className="size-4" />
+                </Link>
+              )
             }
           >
-            Você ainda não avaliou nenhum filme. Escolha um título e salve sua
-            primeira nota.
+            {filtered
+              ? 'Escolha outro gênero ou ano, ou remova os filtros para ver toda a sua lista.'
+              : 'Você ainda não avaliou nenhum filme. Escolha um título e salve sua primeira nota.'}
           </SearchFeedback>
         )}
         {ratings.length > 0 && (
