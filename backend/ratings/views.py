@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.cache import never_cache
 
-from core.api import api_endpoint, read_json
+from core.api import api_endpoint, authenticated, read_json
 
 from . import services
 from .validators import validate_filters, validate_movie_id, validate_page, validate_rating
@@ -10,6 +10,7 @@ from .validators import validate_filters, validate_movie_id, validate_page, vali
 
 @never_cache
 @api_endpoint("GET", "HEAD", "POST")
+@authenticated
 def rating_collection(request):
     if request.method == "POST":
         data = read_json(request)
@@ -23,12 +24,14 @@ def rating_collection(request):
 
 @never_cache
 @api_endpoint("GET", "HEAD")
+@authenticated
 def rating_filter_options(request):
     return JsonResponse(services.rating_filter_options(request))
 
 
 @never_cache
 @api_endpoint("GET", "HEAD", "PATCH", "DELETE")
+@authenticated
 def rating_detail(request, movie_id):
     validate_movie_id(movie_id)
     if request.method == "PATCH":

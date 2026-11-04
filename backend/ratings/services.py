@@ -1,4 +1,5 @@
 from django.core.paginator import EmptyPage, Paginator
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 
 from core.api import APIError
@@ -9,22 +10,21 @@ from .models import Rating
 PAGE_SIZE = 20
 
 
-def _session_ratings(request):
-    if not request.session.get("ratings_enabled", False):
-        return Rating.objects.none()
-    key = request.session.session_key
-    return Rating.objects.filter(session_key=key) if key else Rating.objects.none()
+def _user_ratings(request):
+    if not request.user.is_authenticated:
+        raise APIError("Authentication required.", code="authentication_required", status=401)
+    return Rating.objects.filter(user=request.user)
 
 
 def get_rating(request, movie_id):
     try:
-        return _session_ratings(request).get(movie_id=movie_id)
+        return _user_ratings(request).get(movie_id=movie_id)
     except Rating.DoesNotExist:
         raise APIError("Rating not found.", code="rating_not_found", status=404) from None
 
 
 def list_ratings(request, page, *, genre=None, year=None):
-    queryset = _session_ratings(request)
+    queryset = _user_ratings(request)
     if genre is not None:
         queryset = queryset.filter(genres__contains=[{"id": genre}])
     if year is not None:
@@ -43,7 +43,7 @@ def list_ratings(request, page, *, genre=None, year=None):
 
 
 def rating_filter_options(request):
-    queryset = _session_ratings(request)
+    queryset = _user_ratings(request)
     genres = {}
     for metadata in queryset.values_list("genres", flat=True):
         for genre in metadata or []:
@@ -62,16 +62,14 @@ def _duplicate_rating():
 
 
 def create_rating(request, movie_id, score):
-    if _session_ratings(request).filter(movie_id=movie_id).exists():
+    if _user_ratings(request).filter(movie_id=movie_id).exists():
         raise _duplicate_rating()
     movie = get_movie_details(movie_id)
-    request.session["ratings_enabled"] = True
-    if not request.session.session_key:
-        request.session.create()
     try:
         with transaction.atomic():
+            get_user_model().objects.select_for_update().get(pk=request.user.pk)
             return Rating.objects.create(
-                session_key=request.session.session_key,
+                user=request.user,
                 movie_id=movie_id,
                 title=movie["title"],
                 poster_url=movie["poster_url"],
@@ -80,7 +78,7 @@ def create_rating(request, movie_id, score):
                 score=score,
             )
     except IntegrityError:
-        if _session_ratings(request).filter(movie_id=movie_id).exists():
+        if _user_ratings(request).filter(movie_id=movie_id).exists():
             raise _duplicate_rating() from None
         raise
 
