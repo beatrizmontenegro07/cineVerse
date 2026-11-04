@@ -16,3 +16,13 @@ export interface RatingsPage {
   total_results: number;
   results: Rating[];
 }
+
+export interface RatingFilters {
+  genre: string;
+  year: string;
+}
+
+export interface RatingFilterOptions {
+  genres: { id: number; name: string }[];
+  years: number[];
+}
