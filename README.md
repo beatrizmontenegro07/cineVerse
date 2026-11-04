@@ -87,11 +87,13 @@ docker compose up --build
 - Database-aware health endpoint and frontend connectivity status.
 - Backend movie search by title through TMDB.
 - Backend movie details with synopsis, release date, cast, runtime, genres, and TMDB average score.
+- Movie details modal opened from search results, with responsive layout,
+  complete cast, loading/error states, retry, and accessible keyboard navigation.
 - Responsive search page  with movie posters, loading skeletons, empty/error states, retry, and incremental pagination.
 
 ## Unimplemented Features and Justifications
 
-The movie details interface and ratings are pending subsequent phases.
+Movie ratings and the Rated Movies page are pending subsequent phases.
 
 ## API Endpoints
 

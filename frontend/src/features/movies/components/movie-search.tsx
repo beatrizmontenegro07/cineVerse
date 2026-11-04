@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { Icon } from '../../../components/ui/icon';
 import { useMovieSearch } from '../hooks/use-movie-search';
 import { MovieCard } from './movie-card';
+import { MovieDetailsModal } from './movie-details-modal';
+import type { Movie } from '../types';
 import { MovieGrid } from './movie-grid';
 import { MovieGridSkeleton, SearchFeedback } from './search-feedback';
 import { SearchHero } from './search-hero';
@@ -15,6 +17,7 @@ const actionClass =
 
 export function MovieSearch() {
   const [inputValue, setInputValue] = useState('');
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const {
     query,
     movies,
@@ -124,7 +127,11 @@ export function MovieSearch() {
         {movies.length > 0 && (
           <MovieGrid>
             {movies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onSelect={setSelectedMovie}
+              />
             ))}
           </MovieGrid>
         )}
@@ -162,6 +169,13 @@ export function MovieSearch() {
           </div>
         )}
       </section>
+      {selectedMovie && (
+        <MovieDetailsModal
+          key={selectedMovie.id}
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+        />
+      )}
     </>
   );
 }
