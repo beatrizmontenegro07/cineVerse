@@ -3,6 +3,7 @@ import { MediaImage } from '../../../components/ui/media-image';
 import { formatReleaseDate, formatRuntime } from '../formatters';
 import type { MovieDetails } from '../types';
 import { MovieCast } from './movie-cast';
+import { MovieRating } from '../../ratings/components/movie-rating';
 
 export function MovieDetailsContent({
   movie,
@@ -90,6 +91,7 @@ export function MovieDetailsContent({
           </div>
         </dl>
         <MovieCast cast={movie.cast} />
+        <MovieRating movieId={movie.id} title={movie.title} />
       </div>
     </div>
   );
