@@ -86,11 +86,14 @@ docker compose up --build
 - Automatic migrations, persistent database storage and development reloads.
 - Database-aware health endpoint and frontend connectivity status.
 - Backend movie search by title through TMDB.
+- Backend movie details with synopsis, release date, cast, runtime, genres, and TMDB average score.
+- Movie details modal opened from search results, with responsive layout,
+  complete cast, loading/error states, retry, and accessible keyboard navigation.
 - Responsive search page  with movie posters, loading skeletons, empty/error states, retry, and incremental pagination.
 
 ## Unimplemented Features and Justifications
 
-Movie details and ratings are pending subsequent phases.
+Movie ratings and the Rated Movies page are pending subsequent phases.
 
 ## API Endpoints
 
@@ -98,37 +101,23 @@ Movie details and ratings are pending subsequent phases.
 | --- | --- | --- |
 | GET | `/api/health/` | Checks database connectivity; returns HTTP 200 when ready or 503 when unavailable. |
 | GET | `/api/movies/search/?query=batman&page=1` | Searches TMDB movie titles. |
+| GET | `/api/movies/<movie_id>/` | Retrieves details and cast for a movie by its TMDB ID. |
 
-The search endpoint accepts `page` from 1 to 500 (default: 1).
-Search uses [movie search endpoint](https://developer.themoviedb.org/reference/search-movie).
-Configure a valid TMDB v3 API key in `.env` and recreate the backend after changing it:
 
 ```bash
 docker compose up -d backend
 curl 'http://localhost:8000/api/movies/search/?query=batman&page=1'
+curl 'http://localhost:8000/api/movies/272/'
 ```
-
-Example response :
-
-```json
-{
-  "page": 1,
-  "total_pages": 1,
-  "total_results": 1,
-  "results": [
-    {"id": 272, "title": "Batman Begins", "poster_url": null}
-  ]
-}
-```
-
 
 | Status | Meaning |
 | --- | --- |
-| 400 | Invalid query or page. |
+| 400 | Invalid query, page, or movie ID. |
+| 404 | Movie not found. |
 | 405 | Unsupported method (movie endpoints accept GET and HEAD). |
 | 502 | TMDB HTTP/network error or invalid response. |
 | 503 | Missing API key or TMDB rate limit. |
-| 504 | TMDB request timed out (10-second timeout). |
+| 504 | TMDB request timed out (10-second timeout). 
 
 ## Technical Decisions
 

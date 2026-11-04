@@ -10,6 +10,21 @@ const paths = {
   close: <path d="m6 6 12 12M6 18 18 6" />,
   arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
   chevron: <path d="m9 5 7 7-7 7" />,
+  star: (
+    <path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z" />
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M16 3v4M8 3v4M3 11h18m-13 4h2m4 0h2" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
   film: (
     <>
       <rect x="3" y="3" width="18" height="18" rx="2" />
